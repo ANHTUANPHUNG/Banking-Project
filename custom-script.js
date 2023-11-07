@@ -5,7 +5,6 @@ async function fetchAllPerson() {
     const persons = await response.json();
     return persons;
 }
-
 const getAllPerson = async () => {
     const persons = await fetchAllPerson();
     persons.forEach((item) => {
@@ -13,6 +12,82 @@ const getAllPerson = async () => {
         bodyCustomer.insertAdjacentHTML("afterbegin", str);
     });
 };
+// let user = [];
+// let currentPage = 1;
+// let perPage = 1;
+// let totalPage;
+// let perUser = [];
+// const ePagination = document.getElementById("pagination");
+
+// function initPagination() {
+//     getAllPerson();
+// }
+
+// function getAllPerson() {
+//     fetchAllPerson()
+//         .then(persons => {
+//             user = persons;
+//             renderPageNumber();
+//             renderPage(currentPage);
+//         });
+// }
+
+// function renderPageNumber() {
+//     totalPage = Math.ceil(user.length / perPage);
+//     ePagination.innerHTML = '';
+//     let str = '';
+
+//     // Xác định khoảng trang cần hiển thị (ví dụ: 5 trang xung quanh trang hiện tại)
+//     let maxPagesToShow = 5;
+//     let pagesToLeft = Math.floor(maxPagesToShow / 2);
+//     let pagesToRight = maxPagesToShow - pagesToLeft;
+
+//     // Tính toán trang đầu và trang cuối cần hiển thị
+//     let startPage = Math.max(1, currentPage - pagesToLeft);
+//     if (startPage < 1) {
+//         startPage = 1;
+//     }
+//     let endPage = Math.min(totalPage, startPage + maxPagesToShow - 1);
+//     if (endPage > totalPage) {
+//         endPage = totalPage;
+//     }
+//     str = `<li  ${currentPage === 1 ? "disabled" : ''}>
+//         <a class="page-link" href="#" tabindex="-1" aria-disabled="true" >Previous</a>
+//     </li>`;
+//     console.log(startPage);
+//     console.log(endPage);
+//     for (let i = startPage; i <= endPage; i++) {
+//         str += `<li ${i === currentPage ? 'class="active"' : ''} onclick="handlePageNumber(${i})" aria-current="page">
+//             <a class="page-link" href="#">${i}</a>
+//         </li>`;
+//     }
+
+//     str += `<li  ${currentPage === totalPage ? 'disabled' : ''}>
+//         <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+//     </li>`;
+
+//     ePagination.innerHTML = str;
+//     const ePages = ePagination.querySelectorAll('li');
+//     const ePrevious = ePages[0];
+//     const eNext = ePages[ePages.length - 1];
+
+//     ePrevious.onclick = () => {
+//         if (currentPage === 1) {
+//             return;
+//         }
+//         currentPage -= 1;
+//         renderPage(currentPage);
+
+//     }
+
+//     eNext.onclick = () => {
+//         if (currentPage === totalPage) {
+//             return;
+//         }
+//         currentPage += 1;
+//         renderPage(currentPage);
+//     }
+// }
 const fetchUpdatePerson = async (personId, obj) => {
     const response = await fetch("http://localhost:3300/persons/" + personId, {
         method: 'PATCH',
@@ -233,13 +308,28 @@ customerForm.onsubmit = async function (event) {
     });
     if (response.ok) {
         Swal.fire({
-            title: 'Created',
-            text: 'Tạo thành công.',
-            icon: 'success',
+            title: 'Đang xử lý',
+            text: 'Vui lòng chờ...',
+            onBeforeOpen: () => {
+                Swal.showLoading();
+            },
+            timer: 2000, // Đợi 2 giây (2000ms)
+            showCancelButton: false,
             showConfirmButton: false,
-            position: 'top-start',
-            timer: 900
-        })
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.timer) {
+                // Sau khi đợi 2 giây, hiển thị thông báo thành công
+                Swal.fire({
+                    title: 'Created',
+                    text: 'Tạo thành công.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    position: 'top-start',
+                    timer: 1500 // Hiển thị thông báo thành công trong 1,5 giây (1500ms)
+                });
+            }
+        });
     }
 
 };
@@ -267,13 +357,27 @@ const deletePerson = async (personId) => {
             bodyCustomer.insertAdjacentHTML("afterbegin", str);
         });
         Swal.fire({
-            title: 'Deleted',
-            text: 'Xóa thành công.',
-            icon: 'success',
+            title: 'Đang xử lý',
+            text: 'Vui lòng chờ...',
+            onBeforeOpen: () => {
+                Swal.showLoading();
+            },
+            timer: 2000, // Đợi 2 giây (2000ms)
+            showCancelButton: false,
             showConfirmButton: false,
-            position: 'top-start',
-            timer: 900
-        })
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.timer) {
+                Swal.fire({
+                    title: 'Deleted',
+                    text: 'Xóa thành công.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    position: 'top-start',
+                    timer: 900
+                })
+            }
+        });
     } else {
         Swal.fire({
             title: 'Deleted',
@@ -397,13 +501,33 @@ depositCustomerHT.addEventListener("submit", async function (e) {
             const updateRow = document.getElementById('tr_' + personId);
             const str = renderPerson(content);
             updateRow.innerHTML = str;
+            const persons = await fetchAllPerson();
+            bodyCustomer.innerHTML = "";
+            persons.forEach((item) => {
+                const str = renderPerson(item);
+                bodyCustomer.insertAdjacentHTML("afterbegin", str);
+            });
             Swal.fire({
-                title: 'Deposit',
-                text: 'Thêm tiền thành công.',
-                icon: 'success',
+                title: 'Đang xử lý',
+                text: 'Vui lòng chờ...',
+                onBeforeOpen: () => {
+                    Swal.showLoading();
+                },
+                timer: 2000, // Đợi 2 giây (2000ms)
+                showCancelButton: false,
                 showConfirmButton: false,
-                position: 'top-start',
-                timer: 900
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    Swal.fire({
+                        title: 'Deposit',
+                        text: 'Thêm tiền thành công.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        position: 'top-start',
+                        timer: 900
+                    })
+                }
             })
         }
     } else {
@@ -489,13 +613,33 @@ withdrawCustomerHT.addEventListener("submit", async function (e) {
             const updateRow = document.getElementById('tr_' + personId);
             const str = renderPerson(content);
             updateRow.innerHTML = str;
+            const persons = await fetchAllPerson();
+            bodyCustomer.innerHTML = "";
+            persons.forEach((item) => {
+                const str = renderPerson(item);
+                bodyCustomer.insertAdjacentHTML("afterbegin", str);
+            });
             Swal.fire({
-                title: 'Withdraw',
-                text: 'Trừ tiền thành công.',
-                icon: 'success',
+                title: 'Đang xử lý',
+                text: 'Vui lòng chờ...',
+                onBeforeOpen: () => {
+                    Swal.showLoading();
+                },
+                timer: 2000, // Đợi 2 giây (2000ms)
+                showCancelButton: false,
                 showConfirmButton: false,
-                position: 'top-start',
-                timer: 900
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    Swal.fire({
+                        title: 'Withdraw',
+                        text: 'Trừ tiền thành công.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        position: 'top-start',
+                        timer: 900
+                    })
+                }
             })
 
         } else {
@@ -641,13 +785,33 @@ transferCustomerI.addEventListener("submit", async function (e) {
             bodyCustomer.innerHTML = "";
             document.getElementById("transferModal").style.display = "none";
             getAllPerson()
+            const persons = await fetchAllPerson();
+            bodyCustomer.innerHTML = "";
+            persons.forEach((item) => {
+                const str = renderPerson(item);
+                bodyCustomer.insertAdjacentHTML("afterbegin", str);
+            });
             Swal.fire({
-                title: 'Transfer',
-                text: 'Chuyển tiền thành công.',
-                icon: 'success',
+                title: 'Đang xử lý',
+                text: 'Vui lòng chờ...',
+                onBeforeOpen: () => {
+                    Swal.showLoading();
+                },
+                timer: 2000, // Đợi 2 giây (2000ms)
+                showCancelButton: false,
                 showConfirmButton: false,
-                position: 'top-start',
-                timer: 900
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    Swal.fire({
+                        title: 'Transfer',
+                        text: 'Chuyển tiền thành công.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        position: 'top-start',
+                        timer: 900
+                    })
+                }
             })
 
         } else {
@@ -728,79 +892,3 @@ function updateTransactionAmount() {
     transactionAmountInput.value = transactionAmount.toFixed(2);
 }
 
-// let user = [];
-// let currentPage = 1;
-// let perPage = 1;
-// let totalPage;
-// let perUser = [];
-// const ePagination = document.getElementById("pagination");
-
-// function initPagination() {
-//     getAllPerson();
-// }
-
-// function getAllPerson() {
-//     fetchAllPerson()
-//         .then(persons => {
-//             user = persons;
-//             renderPageNumber();
-//             renderPage(currentPage);
-//         });
-// }
-
-// function renderPageNumber() {
-//     totalPage = Math.ceil(user.length / perPage);
-//     ePagination.innerHTML = '';
-//     let str = '';
-
-//     // Xác định khoảng trang cần hiển thị (ví dụ: 5 trang xung quanh trang hiện tại)
-//     let maxPagesToShow = 5;
-//     let pagesToLeft = Math.floor(maxPagesToShow / 2);
-//     let pagesToRight = maxPagesToShow - pagesToLeft;
-
-//     // Tính toán trang đầu và trang cuối cần hiển thị
-//     let startPage = Math.max(1, currentPage - pagesToLeft);
-//     if (startPage < 1) {
-//         startPage = 1;
-//     }
-//     let endPage = Math.min(totalPage, startPage + maxPagesToShow - 1);
-//     if (endPage > totalPage) {
-//         endPage = totalPage;
-//     }
-//     str = `<li  ${currentPage === 1 ? "disabled" : ''}>
-//         <a class="page-link" href="#" tabindex="-1" aria-disabled="true" >Previous</a>
-//     </li>`;
-//     console.log(startPage);
-//     console.log(endPage);
-//     for (let i = startPage; i <= endPage; i++) {
-//         str += `<li ${i === currentPage ? 'class="active"' : ''} onclick="handlePageNumber(${i})" aria-current="page">
-//             <a class="page-link" href="#">${i}</a>
-//         </li>`;
-//     }
-
-//     str += `<li  ${currentPage === totalPage ? 'disabled' : ''}>
-//         <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
-//     </li>`;
-
-//     ePagination.innerHTML = str;
-//     const ePages = ePagination.querySelectorAll('li');
-//     const ePrevious = ePages[0];
-//     const eNext = ePages[ePages.length - 1];
-
-//     ePrevious.onclick = () => {
-//         if (currentPage === 1) {
-//             return;
-//         }
-//         currentPage -= 1;
-//         renderPage(currentPage);
-
-//     }
-
-//     eNext.onclick = () => {
-//         if (currentPage === totalPage) {
-//             return;
-//         }
-//         currentPage += 1;
-//         renderPage(currentPage);
-//     }
-// }
