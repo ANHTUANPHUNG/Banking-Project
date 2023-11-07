@@ -99,13 +99,27 @@ const fetchUpdatePerson = async (personId, obj) => {
     });
     if (response.ok) {
         Swal.fire({
-            title: 'Edited',
-            text: 'Sửa thành công.',
-            icon: 'success',
+            title: 'Đang xử lý',
+            text: 'Vui lòng chờ...',
+            onBeforeOpen: () => {
+                Swal.showLoading();
+            },
+            timer: 2000, // Đợi 2 giây (2000ms)
+            showCancelButton: false,
             showConfirmButton: false,
-            position: 'top-start',
-            timer: 900
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.timer) {
+                Swal.fire({
+                    title: 'Edited',
+                    text: 'Sửa thành công.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    position: 'top-start',
+                    timer: 900
 
+                })
+            }
         })
     }
     const person = await response.json();
